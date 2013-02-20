@@ -7,10 +7,14 @@
 
   Model.prototype.idAttribute = "_id";
 
-  Model.prototype.save = function() {
+  Model.prototype.save = function(callback) {
+    var self = this;
     var id = this.getId();
     if (typeof id === "undefined") {
-      this._collection.insert(this.attributes);
+      this._collection.insert(this.attributes, function(error, id) {
+        if (id) self.attributes[self.idAttribute] = id;
+        _.bind(callback, this)(error, id)
+      });
     }
   };
 
@@ -43,13 +47,13 @@
     }
   };
 
-  var Controller = Meteor.Controller = function() {
+  var Presenter = Meteor.Presenter = function() {
     delegateData(this.template, this.data);
     delegateEvents(this.template, this.events);
   };
 
-  Controller.extend = extend;
-  Controller.auto = function(protoProps) {
+  Presenter.extend = extend;
+  Presenter.auto = function(protoProps) {
     var ext = this.extend(protoProps);
     new ext();
     return ext;

@@ -1,4 +1,4 @@
-meteor-mvc
+meteor-mvp
 ==========
 
-An MVC-like wrapper and extension for Meteor
+An MVP wrapper and extension for Meteor
