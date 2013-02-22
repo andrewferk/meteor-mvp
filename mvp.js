@@ -3,7 +3,7 @@
   var Model = Meteor.Model = function(attrs) {
     initializeDefaults(this, this.defaults);
     applyModelAttrs(this, attrs);
-    initializeRemotes(this, this.remote);
+    extendRemotes(this, this.remote);
     if (this.initialize) this.initialize();
   };
 
@@ -34,6 +34,9 @@
   };
   
   Model.extend = function(protoProps) {
+    if (protoProps && protoProps.remote) {
+      protoProps = initializeRemotes(protoProps, protoProps.remote);
+    }
     var ext = _.bind(extend, this)(protoProps);
     if (protoProps && (protoProps.collection || protoProps.mock)) {
       var collection = new Meteor.Collection(protoProps.collection);
@@ -65,17 +68,29 @@
       if (this.collection) {
         saltedRemote = this.collection + "_" + saltedRemote;
       }
-      methods[saltedRemote] = function() {
-        _.extend(this, model);
-        return temp.apply(this, arguments);
+      methods[saltedRemote] = function(object, args) {
+        _.extend(this, object, Model.prototype);
+        _.extend(this, object);
+        return temp.apply(this, args);
       };
-      model[remote] = function() {
-        var args = Array.prototype.slice.call(arguments);
-        return Meteor.apply(saltedRemote, args);
+      model[remote] = function(object, args) {
+        var args = Array.prototype.slice.call(args);
+        return Meteor.call(saltedRemote, object, args);
       };
     }
     Meteor.methods(methods);
     model._remotes = methods;
+    return model
+  };
+
+  function extendRemotes(object, remotes) {
+    for (var i in remotes) {
+      var remote = remotes[i];
+      var temp = object[remote];
+      object[remote] = function() {
+        temp(object, arguments);
+      }
+    }
   };
 
   var Presenter = Meteor.Presenter = function() {

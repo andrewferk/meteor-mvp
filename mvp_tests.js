@@ -91,7 +91,8 @@ Tinytest.add("Remote Model methods are run using Meteor.methods", function(test)
     defaults: {
       "foo": "bar"
     },
-    testRemote: function() {
+    testRemote: function(aString) {
+      test.equal(aString, "test");
       test.equal(this.get("foo"), "bar");
       sync = true;
       if (this.isSimulation) {
@@ -122,4 +123,36 @@ Tinytest.add("Remote Model methods are run using Meteor.methods", function(test)
       test.notEqual(typeof Meteor.default_server.method_handlers[r], "undefined");
     }
   }
+});
+
+Tinytest.add("Use remote Model methods with multiple instantiated Models", function(test) {
+  var count = 0;
+  var Remote = Meteor.Model.extend({
+    mock: true,
+    remote: ["multiTestRemote"],
+    multiTestRemote: function() {
+      count++;
+    }
+  });
+  var remote1 = new Remote();
+  var remote2 = new Remote();
+  remote1.multiTestRemote();
+  remote2.multiTestRemote();
+  test.equal(count, 2);
+});
+
+Tinytest.add("Remote Model methods work utilize Class prototype", function(test) {
+  var Remote = Meteor.Model.extend({
+    mock: true,
+    remote: ["protoTestRemote"],
+    defaults: {
+      foo: "bar"
+    },
+    protoTestRemote: function(aString) {
+      test.equal(this.get("foo"), "bar");
+      test.equal(aString, "test");
+    }
+  });
+  var remote = new Remote();
+  remote._remotes.protoTestRemote(JSON.parse(JSON.stringify(remote)), ["test"]);
 });
