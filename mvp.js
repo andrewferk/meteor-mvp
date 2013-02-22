@@ -1,8 +1,10 @@
 (function() {
 
   var Model = Meteor.Model = function(attrs) {
-    initializeModel(this, this.defaults);
+    initializeDefaults(this, this.defaults);
     applyModelAttrs(this, attrs);
+    initializeRemotes(this, this.remote);
+    if (this.initialize) this.initialize();
   };
 
   Model.prototype.idAttribute = "_id";
@@ -18,6 +20,11 @@
     }
   };
 
+  Model.prototype.set = function(attr, value) {
+    this.attributes[attr] = value;
+    return this;
+  };
+
   Model.prototype.get = function(attr) {
     return this.attributes[attr];
   };
@@ -28,13 +35,15 @@
   
   Model.extend = function(protoProps) {
     var ext = _.bind(extend, this)(protoProps);
-    var collection = new Meteor.Collection(protoProps.collection);
-    ext.prototype._collection = collection;
-    _.extend(ext, collection);
+    if (protoProps && (protoProps.collection || protoProps.mock)) {
+      var collection = new Meteor.Collection(protoProps.collection);
+      ext.prototype._collection = collection;
+      _.extend(ext, collection);
+    }
     return ext;
   };
 
-  function initializeModel(model, defaults) {
+  function initializeDefaults(model, defaults) {
     model.attributes = {};
     for (var attr in defaults) {
       model.attributes[attr] = defaults[attr];
@@ -45,6 +54,28 @@
     for (var attr in attrs) {
       model.attributes[attr] = attrs[attr];
     }
+  };
+
+  function initializeRemotes(model, remotes) {
+    var methods = {};
+    for (var i in remotes) {
+      var remote = remotes[i];
+      var saltedRemote = remote;
+      var temp = model[remote];
+      if (this.collection) {
+        saltedRemote = this.collection + "_" + saltedRemote;
+      }
+      methods[saltedRemote] = function() {
+        _.extend(this, model);
+        return temp.apply(this, arguments);
+      };
+      model[remote] = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return Meteor.apply(saltedRemote, args);
+      };
+    }
+    Meteor.methods(methods);
+    model._remotes = methods;
   };
 
   var Presenter = Meteor.Presenter = function() {

@@ -1,5 +1,5 @@
 var Person = Meteor.Model.extend({
-  collection: null
+  mock: true
 });
 
 Tinytest.add("Model's prototype extends a Meteor.Collection object", function(test) {
@@ -57,4 +57,69 @@ Tinytest.add("A new Model object should have an id after save", function(test) {
   person.save(function(error, id) {
     test.equal(person.getId(), id);
   });
+});
+
+Tinytest.add("A Model without a collection will not create a Meteor.Collection", function(test) {
+  var Anon = Meteor.Model.extend();
+  test.isUndefined(Anon.prototype._collection);
+});
+
+Tinytest.add("Model objects execute the initialize method when instantiated", function(test) {
+  var initialized = false;
+  var Init = Meteor.Model.extend({
+    initialize: function() {
+      initialized = true;
+    }
+  });
+  new Init();
+  test.isTrue(initialized);
+});
+
+Tinytest.add("A Model object can set attributes using set(...)", function(test) {
+  var person = new Person();
+  person.set("name", "Andrew");
+  test.equal(person.get("name"), "Andrew");
+});
+
+Tinytest.add("Remote Model methods are run using Meteor.methods", function(test) {
+  var sync = false;
+  var server = false;
+  var simulation = false;
+  var Remote = Meteor.Model.extend({
+    mock: true,
+    remote: ["testRemote"],
+    defaults: {
+      "foo": "bar"
+    },
+    testRemote: function() {
+      test.equal(this.get("foo"), "bar");
+      sync = true;
+      if (this.isSimulation) {
+        simulation = true;
+      }
+      if (Meteor.isServer) {
+        server = true;
+      }
+    }
+  });
+  var remote = new Remote();
+  remote.testRemote("test");
+  if (Meteor.isClient) {
+    test.isTrue(sync);
+    test.isFalse(server);
+    test.isTrue(simulation);
+    test.isTrue(_.size(remote._remotes) > 0);
+    for (var r in remote._remotes) {
+      test.notEqual(typeof Meteor.default_connection._methodHandlers[r], "undefined");
+    }
+  }
+  if (Meteor.isServer) {
+    test.isTrue(sync);
+    test.isTrue(sync);
+    test.isFalse(simulation);
+    test.isTrue(_.size(remote._remotes) > 0);
+    for (var r in remote._remotes) {
+      test.notEqual(typeof Meteor.default_server.method_handlers[r], "undefined");
+    }
+  }
 });
