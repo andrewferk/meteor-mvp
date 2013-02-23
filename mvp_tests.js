@@ -197,3 +197,24 @@ Tinytest.add("Models can have a belongs to association", function(test) {
     test.equal(child.get("owner").name, "Boss");
   });
 });
+
+
+Tinytest.add("Model can use get along with relations", function(test) {
+  var Owner = Meteor.Model.extend({
+    mock: true
+  });
+  var RemoteAndRelation = Meteor.Model.extend({
+    mock: true,
+    defaults: {
+      test: "test"
+    },
+    relations: {
+      owner: {
+        type: "belongsTo",
+        model: Owner
+      }
+    }
+  });
+  var model = new RemoteAndRelation();
+  test.equal(model.get("test"), "test");
+});

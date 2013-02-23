@@ -27,7 +27,9 @@
 
   Model.prototype.get = function(attr) {
     var ret;
-    if (this.relations && this.relations[attr].type == "belongsTo") {
+    if (this.relations && this.relations[attr] &&
+        this.relations[attr].type == "belongsTo"
+    ) {
       var model = this.relations[attr].model;
       ret = model.findOne(this[attr + "_id"]);
     } else {
