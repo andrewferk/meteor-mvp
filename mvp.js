@@ -15,7 +15,7 @@
     if (typeof id === "undefined") {
       this._collection.insert(this, function(error, id) {
         if (id) self[self.idAttribute] = id;
-        _.bind(callback, this)(error, id)
+        callback.call(this, error, id);
       });
     }
   };
@@ -37,7 +37,7 @@
     if (protoProps && protoProps.remote) {
       protoProps = initializeRemotes(protoProps, protoProps.remote);
     }
-    var ext = _.bind(extend, this)(protoProps);
+    var ext = extend.call(this, protoProps);
     if (protoProps && (protoProps.collection || protoProps.mock)) {
       var collection = new Meteor.Collection(protoProps.collection);
       ext.prototype._collection = collection;
@@ -54,28 +54,27 @@
     _.extend(object, attrs);
   };
 
-  function initializeRemotes(model, remotes) {
-    var methods = {};
+  function initializeRemotes(object, remotes) {
+    var meteorMethods = {};
     for (var i in remotes) {
       var remote = remotes[i];
       var saltedRemote = remote;
-      var temp = model[remote];
+      var temp = object[remote];
       if (this.collection) {
         saltedRemote = this.collection + "_" + saltedRemote;
       }
-      methods[saltedRemote] = function(object, args) {
+      meteorMethods[saltedRemote] = function(object, args) {
         _.extend(this, object, Model.prototype);
-        _.extend(this, object);
         return temp.apply(this, args);
       };
-      model[remote] = function(object, args) {
+      object[remote] = function(object, args) {
         var args = Array.prototype.slice.call(args);
         return Meteor.call(saltedRemote, object, args);
       };
     }
-    Meteor.methods(methods);
-    model._remotes = methods;
-    return model
+    Meteor.methods(meteorMethods);
+    object._remotes = meteorMethods;
+    return object;
   };
 
   function extendRemotes(object, remotes) {
