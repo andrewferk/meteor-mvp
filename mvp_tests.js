@@ -141,7 +141,7 @@ Tinytest.add("Use remote Model methods with multiple instantiated Models", funct
   test.equal(count, 2);
 });
 
-Tinytest.add("Remote Model methods work utilize Class prototype", function(test) {
+Tinytest.add("Remote Model methods utilize Class prototype", function(test) {
   var Remote = Meteor.Model.extend({
     mock: true,
     remote: ["protoTestRemote"],
@@ -155,6 +155,21 @@ Tinytest.add("Remote Model methods work utilize Class prototype", function(test)
   });
   var remote = new Remote();
   remote._remotes.protoTestRemote(JSON.parse(JSON.stringify(remote)), ["test"]);
+});
+
+Tinytest.add("Remote Model methods utilize extended prototype", function(test) {
+  var Remote = Meteor.Model.extend({
+    mock: true,
+    remote: ["extendedProtoTestRemote"],
+    myName: function() {
+      return "myName";
+    },
+    extendedProtoTestRemote: function() {
+      test.equal(this.myName(), "myName");
+    }
+  });
+  var remote = new Remote();
+  remote._remotes.extendedProtoTestRemote(JSON.parse(JSON.stringify(remote)));
 });
 
 Tinytest.add("Models can have a belongs to association", function(test) {

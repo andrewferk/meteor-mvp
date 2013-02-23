@@ -62,6 +62,7 @@
   };
 
   function initializeRemotes(object, remotes) {
+    var proto = object;
     var meteorMethods = {};
     for (var i in remotes) {
       var remote = remotes[i];
@@ -71,8 +72,9 @@
         saltedRemote = this.collection + "_" + saltedRemote;
       }
       meteorMethods[saltedRemote] = function(object, args) {
-        _.extend(this, object, Model.prototype);
-        return temp.apply(this, args);
+        var o = {};
+        _.extend(o, Model.prototype, proto, object, this);
+        return temp.apply(o, args);
       };
       object[remote] = function(object, args) {
         var args = Array.prototype.slice.call(args);
@@ -90,7 +92,7 @@
       var temp = object[remote];
       object[remote] = function() {
         temp(object, arguments);
-      }
+      };
     }
   };
 
