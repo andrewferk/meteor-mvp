@@ -156,3 +156,29 @@ Tinytest.add("Remote Model methods work utilize Class prototype", function(test)
   var remote = new Remote();
   remote._remotes.protoTestRemote(JSON.parse(JSON.stringify(remote)), ["test"]);
 });
+
+Tinytest.add("Models can have a belongs to association", function(test) {
+  var Owner = Meteor.Model.extend({
+    mock: true,
+    defaults: {
+      name: "Boss"
+    },
+  });
+  var BelongsTo = Meteor.Model.extend({
+    mock: true,
+    relations: {
+      owner: {
+        type: "belongsTo",
+        model: Owner
+      }
+    }
+  });
+
+  var owner = new Owner();
+  Owner.insert(owner, function(error, id) {
+    var child = new BelongsTo({
+      owner_id: id
+    });
+    test.equal(child.get("owner").name, "Boss");
+  });
+});

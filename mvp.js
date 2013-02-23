@@ -26,7 +26,14 @@
   };
 
   Model.prototype.get = function(attr) {
-    return this[attr];
+    var ret;
+    if (this.relations && this.relations[attr].type == "belongsTo") {
+      var model = this.relations[attr].model;
+      ret = model.findOne(this[attr + "_id"]);
+    } else {
+      ret = this[attr];
+    }
+    return ret;
   };
 
   Model.prototype.getId = function() {
