@@ -13,20 +13,20 @@
     var self = this;
     var id = this.getId();
     if (typeof id === "undefined") {
-      this._collection.insert(this.attributes, function(error, id) {
-        if (id) self.attributes[self.idAttribute] = id;
+      this._collection.insert(this, function(error, id) {
+        if (id) self[self.idAttribute] = id;
         _.bind(callback, this)(error, id)
       });
     }
   };
 
   Model.prototype.set = function(attr, value) {
-    this.attributes[attr] = value;
+    this[attr] = value;
     return this;
   };
 
   Model.prototype.get = function(attr) {
-    return this.attributes[attr];
+    return this[attr];
   };
 
   Model.prototype.getId = function() {
@@ -46,17 +46,12 @@
     return ext;
   };
 
-  function initializeDefaults(model, defaults) {
-    model.attributes = {};
-    for (var attr in defaults) {
-      model.attributes[attr] = defaults[attr];
-    }
+  function initializeDefaults(object, defaults) {
+    _.extend(object, defaults);
   };
 
-  function applyModelAttrs(model, attrs) {
-    for (var attr in attrs) {
-      model.attributes[attr] = attrs[attr];
-    }
+  function applyModelAttrs(object, attrs) {
+    _.extend(object, attrs);
   };
 
   function initializeRemotes(model, remotes) {
