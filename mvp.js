@@ -99,11 +99,23 @@
     }
   };
 
-  var CollectionWrapper = {};
-  CollectionWrapper.findOne = function() {
-    var object = this.prototype._collection.findOne.apply(this, arguments);
-    var instance = new this(object);
-    return instance;
+  var CollectionWrapper = {
+    findOne: function() {
+      var object = this.prototype._collection.findOne.apply(this, arguments);
+      var instance = new this(object);
+      return instance;
+    },
+    insert: function(doc, callback) {
+      if (doc.toJSON && !doc.clone) {
+        doc.clone = function() {
+          var object = doc.toJSON.call(this);
+          if (!object._id) object._id = this.getId();
+          return object;
+        };
+      }
+      var insert = this.prototype._collection.insert;
+      return insert.call(this, doc, callback);
+    }
   };
 
   var Presenter = Meteor.Presenter = function() {

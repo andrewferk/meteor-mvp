@@ -233,3 +233,22 @@ Tinytest.add("Model's fetchOne returns an instansiated Model", function(test) {
     test.equal(savedPerson.myName(), "Bob Something");
   });
 });
+
+Tinytest.add("Model can use a toJSON", function(test) {
+  var ToJSON = Meteor.Model.extend({
+    mock: true,
+    defaults: {
+      json: "json"
+    },
+    toJSON: function() {
+      return {
+        json: "json" + this.json
+      };
+    }
+  });
+  var tojson = new ToJSON();
+  ToJSON.insert(tojson, function(error, id) {
+    var saved = ToJSON.findOne(id);
+    test.equal(saved.json, "jsonjson");
+  });
+});
