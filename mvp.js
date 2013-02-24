@@ -1,6 +1,7 @@
 (function() {
 
   var Model = Meteor.Model = function(attrs) {
+    this.attributes = {};
     initializeDefaults(this, this.defaults);
     applyModelAttrs(this, attrs);
     extendRemotes(this, this.remote);
@@ -14,14 +15,14 @@
     var id = this.getId();
     if (typeof id === "undefined") {
       this._collection.insert(this, function(error, id) {
-        if (id) self[self.idAttribute] = id;
+        if (id) self.attributes[self.idAttribute] = id;
         callback.call(this, error, id);
       });
     }
   };
 
   Model.prototype.set = function(attr, value) {
-    this[attr] = value;
+    this.attributes[attr] = value;
     return this;
   };
 
@@ -31,9 +32,9 @@
         this.relations[attr].type == "belongsTo"
     ) {
       var model = this.relations[attr].model;
-      ret = model.findOne(this[attr + "_id"]);
+      ret = model.findOne(this.attributes[attr + "_id"]);
     } else {
-      ret = this[attr];
+      ret = this.attributes[attr];
     }
     return ret;
   };
@@ -43,9 +44,10 @@
   };
   
   Model.extend = function(protoProps) {
-    if (protoProps && protoProps.remote) {
+    protoProps = protoProps || {};
+    if (protoProps.remote)
       protoProps = initializeRemotes(protoProps, protoProps.remote);
-    }
+    initializeToJSON(protoProps);
     var ext = extend.call(this, protoProps);
     if (protoProps && (protoProps.collection || protoProps.mock)) {
       var collection = new Meteor.Collection(protoProps.collection);
@@ -57,11 +59,26 @@
   };
 
   function initializeDefaults(object, defaults) {
-    _.extend(object, defaults);
+    if (defaults) _.extend(object.attributes, defaults);
   };
 
   function applyModelAttrs(object, attrs) {
-    _.extend(object, attrs);
+    if (attrs) _.extend(object.attributes, attrs);
+  };
+
+  function initializeToJSON(object) {
+    if (!object.toJSON) {
+      object.toJSON = function() {
+        return this.attributes;
+      };
+    }
+    if (object.toJSON && !object.clone) {
+      object.clone = function() {
+        var json = object.toJSON.call(this);
+        if (!json._id) json._id = this._id;
+        return json;
+      };
+    }
   };
 
   function initializeRemotes(object, remotes) {
@@ -75,6 +92,7 @@
         saltedRemote = this.collection + "_" + saltedRemote;
       }
       meteorMethods[saltedRemote] = function(object, args) {
+        if (!object.attributes) object = { attributes: object };
         var o = {};
         _.extend(o, Model.prototype, proto, object, this);
         return temp.apply(o, args);
@@ -106,13 +124,6 @@
       return instance;
     },
     insert: function(doc, callback) {
-      if (doc.toJSON && !doc.clone) {
-        doc.clone = function() {
-          var object = doc.toJSON.call(this);
-          if (!object._id) object._id = this.getId();
-          return object;
-        };
-      }
       var insert = this.prototype._collection.insert;
       return insert.call(this, doc, callback);
     }

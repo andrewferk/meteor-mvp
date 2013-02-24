@@ -18,7 +18,7 @@ if (Meteor.isClient) {
       },
       "selected_name": function() {
         var player = Player.findOne(Session.get("selected_player"));
-        return player && player.name;
+        return player && player.get("name");
       }
     },
   

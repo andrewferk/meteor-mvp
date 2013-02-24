@@ -46,8 +46,8 @@ Tinytest.add("A Model object's defaults are saved", function(test) {
 
   person.save(function(error, id) {
     var saved = Person.findOne(id);
-    test.equal(saved.first, person.get("first"));
-    test.equal(saved.last, person.get("last"));
+    test.equal(saved.get("first"), person.get("first"));
+    test.equal(saved.get("last"), person.get("last"));
   });
 });
 
@@ -194,7 +194,7 @@ Tinytest.add("Models can have a belongs to association", function(test) {
     var child = new BelongsTo({
       owner_id: id
     });
-    test.equal(child.get("owner").name, "Boss");
+    test.equal(child.get("owner").get("name"), "Boss");
   });
 });
 
@@ -222,7 +222,7 @@ Tinytest.add("Model's fetchOne returns an instansiated Model", function(test) {
   var Person = Meteor.Model.extend({
     mock: true,
     myName: function() {
-      return this.name;
+      return this.get("name");
     }
   });
   var person = new Person({
@@ -242,13 +242,13 @@ Tinytest.add("Model can use a toJSON", function(test) {
     },
     toJSON: function() {
       return {
-        json: "json" + this.json
+        json: "json" + this.get("json")
       };
     }
   });
   var tojson = new ToJSON();
   ToJSON.insert(tojson, function(error, id) {
     var saved = ToJSON.findOne(id);
-    test.equal(saved.json, "jsonjson");
+    test.equal(saved.get("json"), "jsonjson");
   });
 });
