@@ -50,8 +50,9 @@
     if (protoProps && (protoProps.collection || protoProps.mock)) {
       var collection = new Meteor.Collection(protoProps.collection);
       ext.prototype._collection = collection;
-      _.extend(ext, collection);
+      _.extend(ext, _.omit(collection, ['findOne']));
     }
+    _.extend(ext, CollectionWrapper);
     return ext;
   };
 
@@ -96,6 +97,13 @@
         temp(object, arguments);
       };
     }
+  };
+
+  var CollectionWrapper = {};
+  CollectionWrapper.findOne = function() {
+    var object = this.prototype._collection.findOne.apply(this, arguments);
+    var instance = new this(object);
+    return instance;
   };
 
   var Presenter = Meteor.Presenter = function() {

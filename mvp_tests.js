@@ -198,7 +198,6 @@ Tinytest.add("Models can have a belongs to association", function(test) {
   });
 });
 
-
 Tinytest.add("Model can use get along with relations", function(test) {
   var Owner = Meteor.Model.extend({
     mock: true
@@ -217,4 +216,20 @@ Tinytest.add("Model can use get along with relations", function(test) {
   });
   var model = new RemoteAndRelation();
   test.equal(model.get("test"), "test");
+});
+
+Tinytest.add("Model's fetchOne returns an instansiated Model", function(test) {
+  var Person = Meteor.Model.extend({
+    mock: true,
+    myName: function() {
+      return this.name;
+    }
+  });
+  var person = new Person({
+    name: "Bob Something"
+  });
+  Person.insert(JSON.parse(JSON.stringify(person)), function(error, id) {
+    var savedPerson = Person.findOne(id);
+    test.equal(savedPerson.myName(), "Bob Something");
+  });
 });
