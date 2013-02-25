@@ -87,7 +87,7 @@ Below is what you can expect from a Model.
 
 `Meteor.Model.extend([properties])`
 
-Use extend to create your own Model. The optional properties object will be attached to the returned constructor. Subclasses of Model can be further extended.
+Use extend to create your own Model. The optional properties object will be attached as the prototype for the the returned constructor. Subclasses of Model can be further extended.
 
     var Animal = Meteor.Model.extend({
       defaults: {
