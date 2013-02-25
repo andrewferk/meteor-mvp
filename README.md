@@ -106,7 +106,7 @@ Use extend to create your own Model. The optional properties object will be atta
       
       bark: function() {
         return this.makeSound();
-      }D
+      }
     });
 
 ## Meteor.Presenter ##
