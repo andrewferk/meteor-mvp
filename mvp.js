@@ -158,6 +158,7 @@
     tempConstructor.prototype = parent.prototype;
 
     function tempModel() { return parent.apply(this, arguments); };
+    _.extend(tempModel, parent);
     tempModel.prototype = new tempConstructor();
 
     if (protoProps) _.extend(tempModel.prototype, protoProps);

@@ -83,6 +83,32 @@ Below is what you can expect from a Model.
         alert("I failed at cheating");
     });
 
+### extend ###
+
+`Meteor.Model.extend([properties])`
+
+Use extend to create your own Model. The optional properties object will be attached to the returned constructor. Subclasses of Model can be further extended.
+
+    var Animal = Meteor.Model.extend({
+      defaults: {
+        sound: ""
+      },
+      
+      makeSound: function() {
+        return this.get("sound");
+      }
+    });
+    
+    var Dog = Animal.extend({
+      defaults: {
+        sound: "ruff"
+      },
+      
+      bark: function() {
+        return this.makeSound();
+      }D
+    });
+
 ## Meteor.Presenter ##
 The Presenter is a mediator between the Model and View that wraps and extends Meteor's Template functionality.
 

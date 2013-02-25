@@ -28,6 +28,19 @@ Tinytest.add("Model's prototype extends a Meteor.Collection object", function(te
   }
 });
 
+Tinytest.add("Model subclasses can be extended", function(test) {
+  var Animal = Meteor.Model.extend({
+    defaults: { sound: "" },
+    makeSound: function() { return this.get("sound"); }
+  });
+  var Dog = Animal.extend({
+    defaults: { sound: "ruff" },
+    bark: function() { return this.makeSound(); }
+  });
+  var myDog = new Dog({ sound: "yip" });
+  test.equal(myDog.bark(), "yip");
+});
+
 Tinytest.add("A new Model object saves to its collection", function(test) {
   var count = Person.find().count();
   var person = new Person();
