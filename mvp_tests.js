@@ -51,6 +51,17 @@ Tinytest.add("A new Model object saves to its collection", function(test) {
   });
 });
 
+Tinytest.add("A predefined Meteor.Collection can be set as the collection", function(test) {
+  var pass = false;
+  var collection = new Meteor.Collection();
+  collection.insert = function() { pass = true; };
+  var Person = Meteor.Model.extend({
+    collection: collection
+  });
+  (new Person()).save();
+  test.isTrue(pass);
+});
+
 Tinytest.add("A Model object's defaults are saved", function(test) {
   var person = new Person({
     first: "Foo",

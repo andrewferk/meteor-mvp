@@ -147,7 +147,7 @@ Set a hash of attributes on the model. An individual attribute can be set by pas
 
 ### collection
 
-** In-Progress ** `model.collection`
+`model.collection`
 
 The name of the Meteor.Collection to use for storing instances of the model. A predefined Meteor.Collection may be set as the collection. 
 
@@ -161,7 +161,7 @@ The name of the Meteor.Collection to use for storing instances of the model. A p
 
 ### type
 
-** Future ** `model.type`
+**Future** `model.type`
 
 The type of the model can be specified for defining a custom EJSON datatype. This is useful when defining the collection to a predefined Meteor.Collection or making a subtype of a model. *Without specifying a type, it assumed all documents in the collection match the class.*
 

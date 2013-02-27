@@ -16,7 +16,7 @@
     if (typeof id === "undefined") {
       this._collection.insert(this, function(error, id) {
         if (id) self.attributes[self.idAttribute] = id;
-        callback.call(this, error, id);
+        if (callback) callback.call(this, error, id);
       });
     }
   };
@@ -50,7 +50,13 @@
     initializeToJSON(protoProps);
     var ext = extend.call(this, protoProps);
     if (protoProps && (protoProps.collection || protoProps.mock)) {
-      var collection = new Meteor.Collection(protoProps.collection);
+      var collection;
+      var collectionType = typeof protoProps.collection;
+      if (collectionType === "object") {
+        collection = protoProps.collection;
+      } else {
+        collection = new Meteor.Collection(protoProps.collection);
+      }
       ext.prototype._collection = collection;
       _.extend(ext, _.omit(collection, ['findOne']));
     }
